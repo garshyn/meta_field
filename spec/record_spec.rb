@@ -17,6 +17,10 @@ describe Record, type: :model do
         expect(subject.meta).to eq({ "field1" => "123" })
         expect(subject.field1).to eq '123'
       end
+      it "strip spaces" do
+        subject.field1 = '  abc  '
+        expect(subject.field1).to eq 'abc'
+      end
     end
 
     describe "tracking changes" do
@@ -29,7 +33,6 @@ describe Record, type: :model do
       it "returns change array" do
         expect(subject.field1_change).to eq ['value1', '123']
       end
-
     end
 
     describe ".changed?" do
@@ -54,27 +57,55 @@ describe Record, type: :model do
         end
         it { expect(subject.changes.keys).not_to include 'meta' }
         it { expect(subject.changes.keys).to include 'field1' }
-        it { expect(subject.changes).to eq({ 'field1' => ['value1', '123'] }) }
+        it do
+          expect(subject.field1_change).to eq(['value1', '123'])
+          expect(subject.changes).to eq({ 'field1' => ['value1', '123'] })
+        end
       end
     end
-
-    # context "scoped fields" do
-    #   let(:subject) { described_class.create meta: { "field1" => "value1", "some_scope" => { "field2" => "value2" } } }
-    #   it do
-    #     subject.some_scope = { 'field2' => 'value3' }
-    #     # subject.field2 = 'value3'
-    #     expect(subject.field2).to eq "value3"
-    #     expect(subject.field2_was).to eq "value2"
-    #   end
-    # end
 
     context "default value" do
     end
   end
 
   context "scope" do
-  end
+    let(:subject) { described_class.create meta: { "field1" => "value1", "scope1" => { "field2" => "value2" } } }
 
-  context "scope with prefix" do
+    describe "getter" do
+      it { expect(subject.field2).to eq 'value2' }
+    end
+
+    describe "setter" do
+      it do
+        subject.field2 = 'value3'
+        expect(subject.field2).to eq "value3"
+        expect(subject.field2_was).to eq "value2"
+      end
+      it "can be batch" do
+        subject.scope1 = { 'field2' => 'value3' }
+        expect(subject.field2).to eq "value3"
+        expect(subject.field2_was).to eq "value2"
+      end
+    end
+    it "tracks changes" do
+      is_expected.not_to be_changed
+      is_expected.not_to be_meta_changed
+      is_expected.not_to be_field2_changed
+
+      expect(subject.changes).to be_empty
+      subject.field2 = '123'
+
+      is_expected.to be_changed
+      is_expected.to be_meta_changed
+      is_expected.to be_field2_changed
+
+      expect(subject.field2).to eq '123'
+      expect(subject.field2_was).to eq 'value2'
+      expect(subject.field2_change).to eq ['value2', '123']
+      expect(subject.changed).to include 'meta'
+      expect(subject.changed).not_to include 'scope1'
+      expect(subject.changed).to include 'field2'
+      expect(subject.changes).to eq({ 'field2' => ['value2', '123'] })
+    end
   end
 end
