@@ -10,7 +10,6 @@ module MetaField
 
     module ClassMethods
 
-
       def has_meta_fields(*names, **options)
         self.all_meta_fields += names
         scope = options[:scope]
@@ -19,6 +18,7 @@ module MetaField
           if scope
             accessors = [scope.to_s, key.to_s]
             define_method :"#{scope}=" do |hash|
+              self.meta ||= {}
               self.meta[scope.to_s] = hash
             end
           else
@@ -26,12 +26,15 @@ module MetaField
           end
 
           define_method :"#{key}" do
+            return nil if meta.nil?
             meta.dig(*accessors)
           end
 
           define_method :"#{key}=" do |value|
+            self.meta ||= {}
             val = value.is_a?(String) ? value.strip : value
             if scope
+              self.meta[scope.to_s] ||= {}
               self.meta[scope.to_s][key.to_s] = val
             else
               self.meta[key.to_s] = val
@@ -39,6 +42,7 @@ module MetaField
           end
 
           define_method :"#{key}_was" do
+            return nil if meta_was.nil?
             meta_was.dig(*accessors)
           end
 

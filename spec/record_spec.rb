@@ -1,6 +1,36 @@
 require 'rails_helper'
 
 describe Record, type: :model do
+  context "meta is nil" do
+    let(:subject) { described_class.create meta: nil }
+    describe "getter" do
+      it { expect(subject.field1).to eq nil }
+    end
+    describe "setter" do
+      it do
+        subject.field1 = '123'
+        expect(subject.meta).to eq({ "field1" => "123" })
+        expect(subject.field1).to eq '123'
+      end
+    end
+    context "scope" do
+      describe "getter" do
+        it { expect(subject.field2).to be_nil }
+      end
+      describe "setter" do
+        it do
+          subject.field2 = 'value3'
+          expect(subject.field2).to eq "value3"
+          expect(subject.field2_was).to be_nil
+        end
+        it "can be batch" do
+          subject.scope1 = { 'field2' => 'value3' }
+          expect(subject.field2).to eq "value3"
+          expect(subject.field2_was).to be_nil
+        end
+      end
+    end
+  end
   context "regular usage" do
     let(:subject) { described_class.create meta: { "field1" => "value1" } }
     it "shows the data as it is stored" do
