@@ -1,26 +1,38 @@
 # Meta Field
 
 Ruby On Rails serialization gem that supports ActiveModel::Dirty interface to track changes.
-One Paragraph of project description goes here
 
 ## Usage
-How to use my plugin.
+
+1. Have a `meta` column in the database table
+2. Declare which fields are serialized in `meta` column
+
+```ruby
+class Record < ActiveRecord::Base
+  has_meta_fields :field1, :field2
+
+end
+```
+
+3. Use `field1` setter and getter as it is a regular record attribute.
+
+```ruby
+record = Record.new field1: 'value1'
+record.field1 # => 'value1'
+record.field1 = 'value2' # => 'value2'
+record.save # saved to `meta` column as { 'field1' => 'value2' }
+```
 
 ## Installation
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'meta_field'
+gem 'meta_field', git: 'https://github.com/garshyn/meta_field'
 ```
 
 And then execute:
 ```bash
 $ bundle
-```
-
-Or install it yourself as:
-```bash
-$ gem install meta_field
 ```
 
 ## Running the tests
