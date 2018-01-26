@@ -1,10 +1,20 @@
 # Meta Field
 
-Ruby On Rails serialization gem that supports ActiveModel::Dirty interface to track changes.
+Ruby On Rails serialization gem that supports `ActiveModel::Dirty` interface to track changes.
 
 ## Usage
 
 1. Have a `meta` column in the database table
+
+```ruby
+class AddMetaToRecords < ActiveRecord::Migration
+  def change
+    add_column :records, :meta, :text, limit: 1.megabyte - 1
+  end
+end
+```
+
+
 2. Declare which fields are serialized in `meta` column
 
 ```ruby
