@@ -7,6 +7,10 @@ describe InheritedRecord, type: :model do
     expect(subject.meta).to eq({ "field1" => "value1", "field5" => "value3" })
   end
 
+  it "can have default value" do
+    expect(described_class.new.field5).to eq 0
+  end
+
   describe "getter" do
     it { expect(subject.field1).to eq 'value1' }
     it { expect(subject.field5).to eq 'value3' }

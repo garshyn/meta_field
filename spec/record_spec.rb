@@ -5,6 +5,7 @@ describe Record, type: :model do
     let(:subject) { described_class.create meta: nil }
     describe "getter" do
       it { expect(subject.field1).to eq nil }
+      it { expect{ subject.field5 }.to raise_exception(NoMethodError) }
     end
     describe "setter" do
       it do

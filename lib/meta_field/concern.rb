@@ -4,17 +4,28 @@ module MetaField
 
     included do
       serialize :meta, JSON
-      class_attribute :all_meta_fields
-      self.all_meta_fields = []
+      class_attribute :all_meta_field_names, :all_meta_fields
+      after_initialize :set_default_values
+      self.all_meta_fields = {}
+      self.all_meta_field_names = []
+    end
+
+    def set_default_values
+      all_meta_fields.each do |key, options|
+        next unless all_meta_field_names.include?(key)
+        self.send(:"#{key}=", options[:default]) if options[:default] && self.send(:"#{key}").nil?
+      end
     end
 
     module ClassMethods
 
       def has_meta_fields(*names, **options)
-        self.all_meta_fields += names
-        scope = options[:scope]
+        self.all_meta_field_names += names
 
+        scope = options[:scope]
         names.each do |key|
+          self.all_meta_fields[key] = options
+
           if scope
             accessors = [scope.to_s, key.to_s]
             define_method :"#{scope}=" do |hash|
@@ -59,7 +70,7 @@ module MetaField
 
         define_method :changes do
           changes_hash = super()
-          self.all_meta_fields.each do |key|
+          all_meta_field_names.each do |key|
             changes_hash[key] = send(:"#{key}_change") if send(:"#{key}_changed?")
           end
           changes_hash.delete 'meta'
@@ -68,7 +79,7 @@ module MetaField
 
         define_method :changed do
           changed_array = super()
-          self.all_meta_fields.each do |key|
+          all_meta_field_names.each do |key|
             changed_array << key.to_s if send(:"#{key}_changed?")
           end
           changed_array
