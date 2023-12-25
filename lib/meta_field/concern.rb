@@ -3,7 +3,7 @@ module MetaField
     extend ActiveSupport::Concern
 
     included do
-      serialize :meta, JSON
+      serialize :meta, coder: JSON
       class_attribute :all_meta_field_names, :all_meta_fields
       after_initialize :set_default_values
       self.all_meta_fields = {}
